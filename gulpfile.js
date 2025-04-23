@@ -9,8 +9,9 @@ const styles = require('./styles');
 
 var devMode = false;
 
+// 'css' task - compiles and outputs CSS
 gulp.task('css', function() {
-    gulp.src(styles)
+    return gulp.src(styles)
         .pipe(concat('main.css'))
         .pipe(gulp.dest('dist/css'))
         .pipe(browserSync.reload({
@@ -18,8 +19,9 @@ gulp.task('css', function() {
         }));
 });
 
+// 'js' task - compiles and outputs JS
 gulp.task('js', function() {
-    gulp.src(scripts)
+    return gulp.src(scripts)
         .pipe(concat('scripts.js'))
         .pipe(gulp.dest('./dist/js'))
         .pipe(browserSync.reload({
@@ -27,6 +29,7 @@ gulp.task('js', function() {
         }));
 });
 
+// 'html' task - copies HTML files
 gulp.task('html', function() {
     return gulp.src('./src/templates/**/*.html')
         .pipe(gulp.dest('./dist/'))
@@ -35,10 +38,10 @@ gulp.task('html', function() {
         }));
 });
 
-gulp.task('build', function() {
-    gulp.start(['css', 'js', 'html'])
-});
+// 'build' task - sequence of css, js, html tasks
+gulp.task('build', gulp.series('css', 'js', 'html'));
 
+// 'browser-sync' task - sets up live reloading
 gulp.task('browser-sync', function() {
     browserSync.init(null, {
         open: false,
@@ -48,10 +51,11 @@ gulp.task('browser-sync', function() {
     });
 });
 
-gulp.task('start', function() {
+// 'start' task - dev mode and watches for changes
+gulp.task('start', gulp.series('build', 'browser-sync', function() {
     devMode = true;
-    gulp.start(['build', 'browser-sync']);
-    gulp.watch(['./src/css/**/*.css'], ['css']);
-    gulp.watch(['./src/js/**/*.js'], ['js']);
-    gulp.watch(['./src/templates/**/*.html'], ['html']);
-});
+    gulp.watch(['./src/css/**/*.css'], gulp.series('css'));
+    gulp.watch(['./src/js/**/*.js'], gulp.series('js'));
+    gulp.watch(['./src/templates/**/*.html'], gulp.series('html'));
+}));
+
